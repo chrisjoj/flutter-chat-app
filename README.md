@@ -1,6 +1,6 @@
-# flutter_app
+# friendlychat
 
-A new Flutter application.
+A new flutter project.
 
 ## Getting Started
 
