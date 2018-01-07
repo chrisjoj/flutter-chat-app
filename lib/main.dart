@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 final ThemeData kIOSTheme = new ThemeData(
   primarySwatch: Colors.orange,
@@ -20,8 +21,14 @@ final ThemeData kDefaultTheme = new ThemeData(
   accentColor: Colors.orangeAccent[400],
 );
 
-final googleSignIn = new GoogleSignIn();
+final googleSignIn = new GoogleSignIn(
+  scopes: <String>[
+    'email',
+    'https://www.googleapis.com/auth/contacts.readonly',
+  ],
+);
 final analytics = new FirebaseAnalytics();
+final auth = FirebaseAuth.instance;
 
 const String _name = "Your Name";
 
@@ -33,9 +40,18 @@ Future<Null> _ensureLoggedIn() async {
   GoogleSignInAccount user = googleSignIn.currentUser;
   if (user == null)
     user = await googleSignIn.signInSilently();
-  if (user == null)
+  if (user == null) {
     await googleSignIn.signIn();
     analytics.logLogin();
+  }
+  if (await auth.currentUser() == null) {
+    GoogleSignInAuthentication credentials =
+    await googleSignIn.currentUser.authentication;
+    await auth.signInWithGoogle(
+        idToken: credentials.idToken,
+        accessToken: credentials.accessToken,
+    );
+  }
 }
 
 class FriendlychatApp extends StatelessWidget {
